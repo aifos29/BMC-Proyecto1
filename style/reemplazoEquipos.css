@@ -1,0 +1,61 @@
+GtkWindow.replaceWindow {
+	background-color: #47423F;
+}
+
+GtkLabel.instruction {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.boxEntryReplace {
+	background: #088A08;
+	color: white;
+	border-radius: 0;
+}
+
+GtkButton.boxEntryReplace:hover {
+	color: white;
+	font-weight: bold;
+	background: #01DF3A;
+}
+
+GtkEntry.entryReplace {
+	border-radius: 0;
+	background: #E6E6E6;
+}
+
+GtkButton.buttonReplace {
+	border-radius: 0;
+	background: #088A4B;
+	color: white;
+	border: solid #088A4B;
+	padding: 0;
+}
+
+GtkButton.buttonReplace:hover {
+	color: white;
+	font-weight: bold;
+}
+
+#header {
+	background: #088A4B;
+	color: white;
+	border-radius: 0;
+	font-weight: bold;
+}
+
+GtkEntry {
+	border-radius: 0;
+}
+
+#allEntries {
+	background: #BDBDBD;
+	color: black;
+}
+
+#label {
+	font-size: 13px;
+	color: white;
+	font-weight: bold;
+}

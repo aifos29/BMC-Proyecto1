@@ -1,0 +1,53 @@
+GtkWindow.serieWindow {
+	background-color: #47423F;
+}
+
+GtkLabel.instruction {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.boxEntrySerie {
+	background: #B4045F;
+	color: white;
+	border-radius: 0;
+}
+
+GtkButton.boxEntrySerie:hover {
+	color: white;
+	font-weight: bold;
+	background: #DF0174;
+}
+
+GtkButton.buttonSerie {
+	border-radius: 0;
+	background: #8A084B;
+	color: white;
+	border: solid #8A084B;
+	padding: 0;
+}
+
+GtkButton.buttonSerie:hover {
+	color: white;
+	font-weight: bold;
+}
+
+#header {
+	background: #B4045F;
+	color: white;
+	border-radius: 0;
+	font-weight: bold;
+}
+
+#bestProba {
+	color: green;
+	border-radius: 0;
+	font-weight: bold;
+}
+
+GtkEntry {
+	border-radius: 0;
+	background: #E6E6E6;
+	color: black;
+}

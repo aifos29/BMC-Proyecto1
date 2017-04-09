@@ -1,0 +1,53 @@
+GtkWindow.treeWindow {
+	background-color: #47423F;
+}
+
+GtkLabel.instruction {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.boxEntryTree {
+	background: #0B615E;
+	color: white;
+	border-radius: 0;
+}
+
+GtkButton.boxEntryTree:hover {
+	color: white;
+	font-weight: bold;
+	background: #088A85;
+}
+
+GtkButton.buttonTree {
+	border-radius: 0;
+	background: #0B615E;
+	color: white;
+	border: solid #0B615E;
+	padding: 0;
+}
+
+GtkButton.buttonTree:hover {
+	color: white;
+	font-weight: bold;
+}
+
+#header {
+	background: #088A85;
+	color: white;
+	border-radius: 0;
+	font-weight: bold;
+}
+
+#best {
+	color: #04B404;
+	border-radius: 0;
+	font-weight: bold;
+}
+
+GtkEntry {
+	border-radius: 0;
+	background: #E6E6E6;
+	color: black;
+}

@@ -1,0 +1,137 @@
+GtkWindow.mainWindow {
+	background-color:  #47423F; 
+}
+
+GtkWindow.pendingWindow {
+	background-color: #47423F;
+}
+
+GtkWindow.floydWindow {
+	background-color: #47423F;
+}
+
+GtkLabel.instruction {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkLabel.pending {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkLabel.floyd {
+	font-size: 10px;
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.menu {
+	background: #0B4C5F;
+	color: white;
+	border-color: #3ADF00;
+	border-width: 0;
+	border-radius: 0;
+}
+
+GtkButton.menu:hover {
+  color: white;
+  font-weight: bold;
+  background: #3ADF00;
+}
+
+GtkButton.menuExit {
+	background: #B40404;
+	color: white;
+	border-color: #3ADF00;
+	border-width: 0;
+	border-radius: 0;
+}
+
+GtkButton.menuExit:hover {
+  color: white;
+  font-weight: bold;
+  background: #FF4000;
+}
+
+GtkButton.pendingButton {
+	background: #B40404;
+	color: white;
+	border-width: 0;
+	border-radius: 10px;
+}
+
+GtkButton.pendingButton:hover {
+	background: #B43104;
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.btn_CreateLoad {
+	background: #088A68; 
+	color: white;
+	border-radius: 10px;
+}
+
+GtkButton.btn_CreateLoad:hover {
+	color: white;
+	font-weight: bold;
+}
+
+GtkButton.boxEntry {
+	background: #29088A;
+	color: white;
+	border-radius: 0;
+}
+
+GtkButton.boxEntry:hover {
+	color: white;
+	font-weight: bold;
+	background: #7401DF;
+}
+
+GtkButton.btnPath {
+	background: #088A4B; 
+	color: white;
+	border-radius: 10px;
+}
+
+GtkButton.btnPath:hover {
+	color: white;
+	font-weight: bold;
+}
+
+GtkFileChooserButton.filechooser {
+	background: #A4A4A4; 
+	color: white;
+	border-radius: 0;
+}
+
+GtkFileChooserButton.filechooser:hover {
+	color: white;
+	font-weight: bold;
+}
+
+#newValue {
+	background: #088A29;
+	color: black;
+	font-weight: bold;
+}
+
+#oldValue {
+	background: #F2F2F2;
+	color: black;
+	font-weight: bold;
+}
+
+#newValueP {
+	background: #F4FA58;
+	color: black;
+	font-weight: bold;
+}
+
+GtkEntry {
+	border-radius: 0;
+}
