@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mapas.h"
 
 
 GtkWidget *windowInitial;
@@ -15,7 +16,9 @@ GtkWidget *windowTableData;
 GtkWidget ***tableData;
 GtkWidget *g_tableData;
 GtkWidget *g_scrolledwindow_initialTableData;
+FILE      *file_tableData;
 int totalGen;
+
 
 int main() {
 
@@ -147,20 +150,88 @@ void on_btn_getEntries_clicked() {
 	}
 }
 
+void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][30]){
+  int tableSize = totalGen +1;
+  tableData = calloc(tableSize,sizeof(GtkWidget**));
+
+  g_tableData = gtk_grid_new ();
+  gtk_container_add (GTK_CONTAINER (g_scrolledwindow_initialTableData), g_tableData);
+
+  for(int j = 0; j < tableSize; j++) {
+    tableData[j] = calloc(tableSize,sizeof(GtkWidget*));
+  }
+
+  for(int row =0; row < tableSize; row++) 
+  {
+    for(int column=0; column < tableSize; column++) 
+    {
+      tableData[row][column] = gtk_entry_new();
+      gtk_entry_set_width_chars(GTK_ENTRY(tableData[row][column]),10);
+      gtk_grid_attach (GTK_GRID (g_tableData),tableData[row][column] , column, row, 1, 1);
+
+      if (column == 0 && row!=0){
+      	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),header[row-1]);
+      }
+        if (column != 0 && row==0){
+      	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),header[column-1]);
+      }
+
+      if (row != 0 && column != 0){
+      	gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),Data[row-1][column-1]);	
+      }
+      
+    }
+  }
+  gtk_widget_set_sensitive(tableData[0][0],FALSE);
+  gtk_widget_set_name(tableData[0][0],"rowHeader");
+  gtk_widget_show_all(windowTableData);
+}
+
+
 
 
 
 void on_btn_getFile_clicked() {
+  //header = malloc(totalObjects * sizeof(char*));
+  totalGen = countObjectsFiles (gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(g_filechooser_btn)));
+  printf("Tamaño%d\n",totalGen );
+  char Data[totalGen][totalGen][5];
+  char header[totalGen][30];
+  readFile(Data,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(g_filechooser_btn)),header);
   printf("Entrada Archivo\n");
+  createTableDataFile(Data,header);
+  gtk_widget_hide(windowInitial);
 
+
+}
+
+void createFile(char *fileName) {
+  file_tableData = fopen(fileName,"w+");
+
+  for(int row =0; row < totalGen+1; row++) 
+  {
+    for(int column=0; column < totalGen+1; column++) 
+    {
+    	if (column !=0){
+    		fprintf(file_tableData,"%s;",(gtk_entry_get_text(GTK_ENTRY(tableData[row][column]))));
+    	}
+      
+  
+  }
+    fprintf(file_tableData,"\n");
+  }
+  fclose(file_tableData);
 }
 
 void on_btn_getTableData_clicked() {
 	int lenName = strlen(gtk_entry_get_text (GTK_ENTRY(g_entry_fileName))) + 21;
   
 	char fileName[lenName]; 
-	strcpy(fileName,"examples/Mochila/");
+	strcpy(fileName,"examples/");
 	strcat(fileName, gtk_entry_get_text (GTK_ENTRY(g_entry_fileName)));
     strcat(fileName, ".cvs");
   	printf("%s\n",fileName);
+  	createFile(fileName);
+
+
 }
