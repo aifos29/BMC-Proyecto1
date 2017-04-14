@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "mapas.h"
 
 
@@ -18,9 +19,26 @@ GtkWidget *g_tableData;
 GtkWidget *g_scrolledwindow_initialTableData;
 FILE      *file_tableData;
 int totalGen;
-
+bool debug = false;
 
 int main() {
+  if(debug){
+    //Test quicksort inverted
+    double test[5] = {0.1, 0.4, 0.3, 0.9, -1};
+    quickSort(test, 0, 5 - 1, true);
+    for(int i = 0; i < 5; i++){
+      printf("%lf ", test[i]);
+    }
+    printf("\n");
+    
+    //Test quicksort
+    double test2[5] = {0.1, 0.4, 0.3, 0.9, -1};
+    quickSort(test2, 0, 5 - 1, false);
+    for(int i = 0; i < 5; i++){
+      printf("%lf ", test2[i]);
+    }
+    printf("\n");
+  }
 
     GtkBuilder      *builder; 
 
@@ -229,9 +247,8 @@ void on_btn_getTableData_clicked() {
 	char fileName[lenName]; 
 	strcpy(fileName,"examples/");
 	strcat(fileName, gtk_entry_get_text (GTK_ENTRY(g_entry_fileName)));
-    strcat(fileName, ".cvs");
-  	printf("%s\n",fileName);
-  	createFile(fileName);
-
+  strcat(fileName, ".cvs");
+  printf("%s\n",fileName);
+  createFile(fileName);
 
 }

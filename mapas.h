@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 FILE * fileTableData;
 char buffer[9];
 int totalGenCount;
+int usefullData = 0;
 
 /*Read Files*/
 void fillBuffer(int _val) {
@@ -96,4 +98,96 @@ void readFile(char Data[totalGenCount][totalGenCount][5],char * address,char hea
 	}
 	
 
+}
+
+void parseTableData(char* probabilities[totalGenCount][totalGenCount]){
+
+}
+
+int checkTableData(double probabilities[totalGenCount][totalGenCount]){
+	int good[3] = {1,1,1};
+	int i, j;
+	int mentioned[totalGenCount];
+	
+	//Check wrong probabilities
+	for(i = 0; i < totalGenCount; i++){
+		for(j = 0; j < totalGenCount; j++){
+			if(i != j){//Ignores diagonals
+
+				//Probabilities within 0 and 1
+				if(probabilities[i][j] < 0 || probabilities[i][j] > 1){
+					good[0] = 0;
+				}
+
+				//Table symmetry
+				if(probabilities[i][j] != probabilities[j][i]){
+					good[1] = 0;
+				}
+
+				//Marks a gene as mentioned
+				if(probabilities[i][j] != -1){
+					mentioned[i] = 1;
+					mentioned[j] = 1;
+					usefullData = 0;
+				}
+			}
+		}
+	}
+
+	//Checks that every gene has been mentioned
+
+	//Esto creo que no hace falta por lo que dice la especificacion que solo se consideran genes con informacion
+	for(i = 0; i < totalGenCount; i++){
+		if(mentioned[i] == 0){
+			good[2] = 0;
+		}
+	}
+
+	if(good[0] == 1 && good[1] == 1 && good[2] == 1){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+//Quicksort
+//Adapted from: http://quiz.geeksforgeeks.org/quick-sort/
+	void swap(double *x, double *y) {
+		double temp;
+		temp = *x;
+		*x = *y;
+		*y = temp;
+	}
+
+	int partition(double arr[], int low, int high, bool inverted) {
+		double pivot = arr[high];
+		int i = (low - 1);
+
+		for (int j = low; j < high; j++){
+			if(inverted){
+				if(arr[j] > pivot){
+					i++;
+					swap(&arr[i], &arr[j]);
+				}
+			} else {
+				if(arr[j] <= pivot){
+					i++;
+					swap(&arr[i], &arr[j]);
+				}
+			}
+		}
+		swap(&arr[i + 1], &arr[high]);
+		return (i + 1);
+	}
+
+	void quickSort(double arr[], int low, int high, bool inverted) {
+		if(low < high) {
+			int partitionPoint = partition(arr, low, high, inverted);
+			quickSort(arr, low, partitionPoint - 1, inverted);
+			quickSort(arr, partitionPoint + 1, high, inverted);
+		}
+	}
+
+void createCromosmomeMaps(){
+	char maps[25][totalGenCount][25];
 }
