@@ -20,7 +20,8 @@ GtkWidget *g_scrolledwindow_initialTableData;
 FILE      *file_tableData;
 int totalGen;
 bool debug = false;
-
+bool error = false;
+int sizeArray;
 int main() {
   if(debug){
     //Test quicksort inverted
@@ -30,7 +31,7 @@ int main() {
       printf("%lf ", test[i]);
     }
     printf("\n");
-    
+
     //Test quicksort
     double test2[5] = {0.1, 0.4, 0.3, 0.9, -1};
     quickSort(test2, 0, 5 - 1, false);
@@ -40,12 +41,12 @@ int main() {
     printf("\n");
   }
 
-    GtkBuilder      *builder; 
+    GtkBuilder      *builder;
 
-    
- 
+
+
     gtk_init(NULL, NULL);
- 
+
     builder = gtk_builder_new();
     gtk_builder_add_from_file (builder, "cruces.glade", NULL);
 
@@ -53,8 +54,8 @@ int main() {
     gtk_builder_connect_signals(builder, NULL);
 
 
-	windowTableData = GTK_WIDGET(gtk_builder_get_object(builder, "window_tableData"));
-    gtk_builder_connect_signals(builder, NULL); 
+	  windowTableData = GTK_WIDGET(gtk_builder_get_object(builder, "window_tableData"));
+    gtk_builder_connect_signals(builder, NULL);
 
      g_scrolledwindow_initialTableData = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow_initialTableData"));
 
@@ -78,10 +79,10 @@ int main() {
 
 
 
-    gtk_widget_show(windowInitial);                
+    gtk_widget_show(windowInitial);
     gtk_main();
-	
- 	gtk_widget_show(dialog);
+
+ 	  gtk_widget_show(dialog);
     return 0;
 
 }
@@ -125,9 +126,9 @@ void createTableData(){
     tableData[j] = calloc(tableSize,sizeof(GtkWidget*));
   }
 
-  for(int row =0; row < tableSize; row++) 
+  for(int row =0; row < tableSize; row++)
   {
-    for(int column=0; column < tableSize; column++) 
+    for(int column=0; column < tableSize; column++)
     {
       tableData[row][column] = gtk_entry_new();
       gtk_entry_set_width_chars(GTK_ENTRY(tableData[row][column]),10);
@@ -143,12 +144,15 @@ void createTableData(){
       	sprintf(name, "GEN%d", column);
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),name);
       }
-        if (row>column){
+        if (row>column && column != 0){
              gtk_widget_set_sensitive(tableData[row][column],FALSE);
         }
         if (row==column){
             gtk_widget_set_sensitive(tableData[0][0],FALSE);
             gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),"0.0");
+        }
+        if (row<column){
+          gtk_entry_set_max_length (GTK_ENTRY(tableData[row][column]),4);
         }
   }
 }
@@ -159,7 +163,7 @@ void createTableData(){
 }
 
 void on_btn_getEntries_clicked() {
-	
+
 	int entry_total = atoi(gtk_entry_get_text (GTK_ENTRY(g_entry_totalGen)));
 	if (entry_total==0){
 		gtk_widget_show(dialog);
@@ -168,7 +172,7 @@ void on_btn_getEntries_clicked() {
 	else{
 		printf("Entrada Manual\n");
 		totalGen = entry_total;
-		createTableData();		
+		createTableData();
 		gtk_widget_hide(windowInitial);
 		gtk_widget_show_now(windowTableData);
 	}
@@ -185,9 +189,9 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
     tableData[j] = calloc(tableSize,sizeof(GtkWidget*));
   }
 
-  for(int row =0; row < tableSize; row++) 
+  for(int row =0; row < tableSize; row++)
   {
-    for(int column=0; column < tableSize; column++) 
+    for(int column=0; column < tableSize; column++)
     {
       tableData[row][column] = gtk_entry_new();
       gtk_entry_set_width_chars(GTK_ENTRY(tableData[row][column]),10);
@@ -201,12 +205,13 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
       }
 
       if (row != 0 && column != 0){
-      	gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),Data[row-1][column-1]);	
+      	gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),Data[row-1][column-1]);
       }
       if (row>column){
              gtk_widget_set_sensitive(tableData[row][column],FALSE);
        }
-      
+
+
     }
   }
   gtk_widget_set_sensitive(tableData[0][0],FALSE);
@@ -233,27 +238,73 @@ void on_btn_getFile_clicked() {
 }
 
 void createFile(char *fileName) {
-  file_tableData = fopen(fileName,"w+");
-
-  for(int row =0; row < totalGen+1; row++) 
+/*Declaración de Array*/
+  sizeArray = (totalGen * totalGen-1)/2;
+  relation * information[sizeArray];
+  createArray(information);
+  printf("%d\n",error);
+  if (!error){
+    file_tableData = fopen(fileName,"w+");
+  for(int row =0; row < totalGen+1; row++)
   {
-    for(int column=0; column < totalGen+1; column++) 
+    for(int column=0; column < totalGen+1; column++)
     {
     	if (column !=0){
     		fprintf(file_tableData,"%s;",(gtk_entry_get_text(GTK_ENTRY(tableData[row][column]))));
     	}
-      
-  
+
+
   }
     fprintf(file_tableData,"\n");
   }
   fclose(file_tableData);
+
+  /*->>>Llamar a función pasando como parametro el array*/
+}
+  else{
+    printf("Datos ingresados no válidos\n");
+    error = false;
+  }
+}
+void createArray(relation * information[sizeArray]){
+  int position = 0;
+  for (int i=1;i<totalGen+1;i++){
+    for (int j=1;j<totalGen+1;j++)
+      if (i<j){
+        relation add;
+        /*Falta agregar el nombre
+        strcpy(add.initialGene,gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
+        strcpy(add.finalGene,gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
+        */
+        if (strcmp(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])),"-")!=0){
+            double x = strtod(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])), NULL);
+            printf("%f\n",x);
+            if (x>0 && x<1){
+          		add.value = x;
+          	}
+            else{
+              error = true;
+              break;
+            }
+        }
+        else{
+          add.value = -1;
+        }
+        information[position] = add;
+        position ++;
+
+      }
+  }
+}
+
+void processData(){
+
 }
 
 void on_btn_getTableData_clicked() {
 	int lenName = strlen(gtk_entry_get_text (GTK_ENTRY(g_entry_fileName))) + 21;
-  
-	char fileName[lenName]; 
+
+	char fileName[lenName];
 	strcpy(fileName,"examples/");
 	strcat(fileName, gtk_entry_get_text (GTK_ENTRY(g_entry_fileName)));
   strcat(fileName, ".cvs");
