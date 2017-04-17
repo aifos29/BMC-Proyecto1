@@ -325,8 +325,34 @@ void findChains(relation relations[], int relationsAmount, int maxChains, relati
 	}
 }
 
+void printString(char string[], size){
+	for(int i = 0; i < size; i++){
+		printf("%c", string[i]);
+	}
+	printf("\0  -  ");
+}
+
+void printRelation(relation pRelation){
+	printString(pRelation.initialGene);
+	printString(pRelation.finalGene);
+	printf("%lf\n", pRelation.value);
+}
+
+void printChain(relation chain[], size){
+	for(int i  = 0; i < size; i++){
+		printRelation(chain[i]);
+	}
+}
+
 void createCromosmomeMaps(){
-	relation relations[25];
-	relation chains[100][25];
-	findChains(relations, 25, 100, chains);
+	relation relations[3];
+	relation r1 = {"A", "B", 0.24};
+    relation r2 = {"A", "F", 0.16};
+    relation r3 = {"A", "C", 0.8};
+    relations[1] = r1;
+    relations[0] = r2;
+    relations[2] = r3;
+    quickSortR(relations, 0, 3-1, true);
+	relation chains[100][5];
+	findChains(relations, 5, 100, chains);
 }
