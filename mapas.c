@@ -143,9 +143,15 @@ void createTableData(){
       	sprintf(name, "GEN%d", column);
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),name);
       }
-      
-    }
+        if (row>column){
+             gtk_widget_set_sensitive(tableData[row][column],FALSE);
+        }
+        if (row==column){
+            gtk_widget_set_sensitive(tableData[0][0],FALSE);
+            gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),"0.0");
+        }
   }
+}
   gtk_widget_set_sensitive(tableData[0][0],FALSE);
   gtk_widget_set_name(tableData[0][0],"rowHeader");
   gtk_widget_show_all(windowTableData);
@@ -197,6 +203,9 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
       if (row != 0 && column != 0){
       	gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),Data[row-1][column-1]);	
       }
+      if (row>column){
+             gtk_widget_set_sensitive(tableData[row][column],FALSE);
+       }
       
     }
   }
