@@ -19,26 +19,24 @@ GtkWidget *g_tableData;
 GtkWidget *g_scrolledwindow_initialTableData;
 FILE      *file_tableData;
 int totalGen;
-bool debug = false;
+bool debug = true;
 bool error = false;
 int sizeArray;
 int main() {
   if(debug){
+    double test[3] = {2, 4, 5};
     //Test quicksort inverted
-    double test[5] = {0.1, 0.4, 0.3, 0.9, -1};
-    quickSort(test, 0, 5 - 1, true);
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 3; i++){
       printf("%lf ", test[i]);
     }
     printf("\n");
-
-    //Test quicksort
-    double test2[5] = {0.1, 0.4, 0.3, 0.9, -1};
-    quickSort(test2, 0, 5 - 1, false);
-    for(int i = 0; i < 5; i++){
-      printf("%lf ", test2[i]);
+    sort(0, val);
+    for(int i = 0; i < 3; i++){
+      printf("%lf ", test[i]);
     }
     printf("\n");
+    
+    createCromosmomeMaps();
   }
 
     GtkBuilder      *builder;
@@ -240,7 +238,7 @@ void on_btn_getFile_clicked() {
 void createFile(char *fileName) {
 /*Declaración de Array*/
   sizeArray = (totalGen * totalGen-1)/2;
-  relation * information[sizeArray];
+  relation information[sizeArray];
   createArray(information);
   printf("%d\n",error);
   if (!error){
@@ -266,7 +264,7 @@ void createFile(char *fileName) {
     error = false;
   }
 }
-void createArray(relation * information[sizeArray]){
+void createArray(relation information[sizeArray]){
   int position = 0;
   for (int i=1;i<totalGen+1;i++){
     for (int j=1;j<totalGen+1;j++)
@@ -280,6 +278,8 @@ void createArray(relation * information[sizeArray]){
             double x = strtod(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])), NULL);
             printf("%f\n",x);
             if (x>0 && x<1){
+              copyString(add.initialGene, gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
+              copyString(add.finalGene, gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
           		add.value = x;
           	}
             else{
@@ -290,7 +290,9 @@ void createArray(relation * information[sizeArray]){
         else{
           add.value = -1;
         }
-        information[position] = add;
+        copyString(information[position].initialGene, add.initialGene);
+        copyString(information[position].finalGene, add.finalGene);
+        information[position].value = add.value;
         position ++;
 
       }
