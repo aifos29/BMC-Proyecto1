@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #define val 2
-#define MAX_DESC 25
+#define MAX_DESC 4
 
 FILE * fileTableData;
 char buffer[9];
@@ -17,9 +17,10 @@ typedef struct{
 	double value;
 }relation;
 
+int chainsUsed;
+int activeChains[100];
+int relationsInChain[100];
 relation chains[100][100];
-relation chains1[100][100];
-relation chains2[100][100];
 
 /*Read Files*/
 void fillBuffer(int _val) {
@@ -33,7 +34,6 @@ void fillBuffer(int _val) {
 		strcat(buffer,auxiliar);
 	}
 }
-
 
 void cleanBuffer(){ memset(buffer,'\0',strlen(buffer)); }
 
@@ -171,17 +171,21 @@ void printRelation(relation pRelation){
 }
 
 void printChain(relation chain[], int size){
-	printf("SIZE: %i\n", size);
 	for(int i  = 0; i < size; i++){
 		printRelation(chain[i]);
 	}
-	printf("WHAT\n");
 }
 
 void copyString(char str1[], char str2[]){
     for (int i = 0; i < MAX_DESC; i++){
         str1[i] = str2[i];
     }
+}
+
+void copyString2(char str1[], const char str2[]){
+	for (int i = 0; i < MAX_DESC; i++) {
+		str1[i] = str2[i];
+	}
 }
 
 int compareDoubles(const void * a, const void * b){
@@ -196,35 +200,22 @@ int compareRelations(const void * a, const void *b){
 	return 0;
 }
 
-int * findChains(relation *relations, int relationsAmount, int maxChains){
+void findChains(relation *relations, int relationsAmount){
 
-	int chainsUsed = 1;//Amount of chains created
+	chainsUsed = 0;//Amount of chains created
 
-	int activeChains[100];//Marca 1 en la posicion de una cadena que aun se puede usar, 0 si se debe ignorar
+	//int activeChains[100];//Marca 1 en la posicion de una cadena que aun se puede usar, 0 si se debe ignorar
 
-	static int relationsInChain[100];//Amounts of relations within a Chain
+	//int relationsInChain[100];//Amounts of relations within a Chain
 	//int lengthTakenInA[100];//Distance used in Chromosome A
 	//int lengthTakenInB[100];//Distance used in Chromosome B, if value > 0.50
 
 	int i, j, k, y, n, m, dummy, varTemporal, newArray, newArray2, newSize, posInitialGene, posFinalGene, chainsToAdd, toIgnore;
-
-	relation currentRelation = relations[0];
-	y = 0;
-
-	//Generate initial chain
-	copyString(chains[0][0].initialGene, currentRelation.initialGene);
-	copyString(chains[0][0].finalGene, currentRelation.finalGene);
-	chains[0][0].value = currentRelation.value;
-
-	copyString(chains[0][1].initialGene, currentRelation.finalGene);
-	copyString(chains[0][1].finalGene, "**");
-	chains[0][1].value = 0;
-
-	activeChains[0] = 1;
-	relationsInChain[0] = 2;
+	bool joinedToChain;
+	relation currentRelation;
 
 	////For each relation recived
-	for (i = 1; i < relationsAmount; i++) {
+	for (i = 0; i < relationsAmount; i++) {
 		toIgnore = 0;
 		chainsToAdd = 0;
 		currentRelation = relations[i];
@@ -253,7 +244,29 @@ int * findChains(relation *relations, int relationsAmount, int maxChains){
 				}
 				printf("\nposInitialGene: %i  -  posFinalGene: %i\n", posInitialGene, posFinalGene);
 
+				if(posInitialGene == -1){
+					printf("TRY INVERSE\n");
+					posInitialGene = -1;
+					posFinalGene = -1;
+					char temp[MAX_DESC];
+					copyString(temp, currentRelation.initialGene);
+					copyString(currentRelation.initialGene, currentRelation.finalGene);
+					copyString(currentRelation.finalGene, temp);
+					for (k = 0; k < relationsInChain[j]; k++) {
+						//Set position of initial gene to the relation which contains it
+						if (strcmp(currentRelation.initialGene, currentChain[k].initialGene) == 0) {
+							posInitialGene = k;
+						}
+						//Set position of final gene to the relation which contains it
+						if (strcmp(currentRelation.finalGene, currentChain[k].finalGene) == 0) {
+							posFinalGene = k;
+						}
+					}
+					printf("\nposInitialGene: %i  -  posFinalGene: %i\n", posInitialGene, posFinalGene);
+				}
+
 				if(posInitialGene == -1 && posFinalGene == -1){//Relation not yet found in map
+					toIgnore++;
 					continue;
 				} else if(posInitialGene == posFinalGene){
 					printf("INITIAL AND FINAL EQUAL\n");
@@ -264,95 +277,111 @@ int * findChains(relation *relations, int relationsAmount, int maxChains){
 						activeChains[j] = 0;
 						printf("RIGHT HERE\n");
 					}
+					joinedToChain = true;
 				} else if (posInitialGene != -1 && posFinalGene == -1){
 
-					n = 0;// int n2 = 0;
-					m = 0;// int m2 = 0;
 					dummy = j;
 					varTemporal = relationsInChain[j];
 
 					newArray = chainsUsed + ((dummy - toIgnore) * 2);
 					newArray2 = newArray + 1;
 
+					relation r[100], r2[100];
+
 					//////////////////////////////////VALIDAR PARA DISTANCIAS
-					//Create alternate chain 1
+					printf("Create alternate chain 1\n");
+					printf("Var temporal %i\n", varTemporal);
+					m = 0;
+					n = 0;
 					newSize = varTemporal + 1;
 					while(n < varTemporal){
 						if(m == posInitialGene){
-							copyString(chains1[y][m].initialGene, currentChain[n].initialGene);
-							copyString(chains1[y][m].finalGene, currentRelation.finalGene);
-							chains1[y][m].value = currentRelation.value;
+							copyString(r[m].initialGene, currentChain[n].initialGene);
+							copyString(r[m].finalGene, currentRelation.finalGene);
+							r[m].value = currentRelation.value;
+							if(currentRelation.value > 0.5) { r[m].value += 0.5; }
 							m++;
 							n++;
+
+							if(posInitialGene == varTemporal - 1){
+								printf("FINAL\n");
+								copyString(r[m].initialGene, currentRelation.finalGene);
+								copyString(r[m].finalGene, "**");
+								r[m].value = 0;
+							}
 						} else if(m == posInitialGene + 1){
+							printf("NOT FINAL\n");
 							int tempN = n - 1;
-							copyString(chains1[y][m].initialGene, currentRelation.finalGene);
-							copyString(chains1[y][m].finalGene, currentChain[n].initialGene);
-							chains1[y][m].value = currentChain[tempN].value - currentRelation.value;
+							copyString(r[m].initialGene, currentRelation.finalGene);
+							copyString(r[m].finalGene, currentChain[n].initialGene);
+							r[m].value = currentChain[tempN].value - currentRelation.value;
 							m++;
 						} else {
-							copyString(chains1[y][m].initialGene, currentChain[n].initialGene);
-							copyString(chains1[y][m].finalGene, currentChain[n].finalGene);
-							chains1[y][m].value = currentChain[n].value;
+							copyString(r[m].initialGene, currentChain[n].initialGene);
+							copyString(r[m].finalGene, currentChain[n].finalGene);
+							r[m].value = currentChain[n].value;
 							n++;
 							m++;
 						}
 					}
-					//printf("\nChain b %i: \n", y); printChain(r, relationsInChain[y]); printf("\n");
+					printf("\nChain %i: \n", newArray); printChain(r, newSize); printf("\n");
 
+					printf("Create alternate chain 2\n");
 					n = 0; m = 0;
 					while(n < varTemporal){
 						if(posInitialGene == 0){
 							if(m == posInitialGene){
-								copyString(chains2[y][m].initialGene, currentRelation.finalGene);
-								copyString(chains2[y][m].finalGene, currentChain[n].initialGene);
-								chains2[y][m].value = currentRelation.value;
+								copyString(r2[m].initialGene, currentRelation.finalGene);
+								copyString(r2[m].finalGene, currentChain[n].initialGene);
+								r2[m].value = currentRelation.value;
+								if(currentRelation.value > 0.5) { r2[m].value += 0.5; }
 								m++;
 							} else if(m == posInitialGene +1){
-								copyString(chains2[y][m].initialGene, currentChain[n].initialGene);
-								copyString(chains2[y][m].finalGene, currentChain[n].finalGene);
-								chains2[y][m].value = currentChain[n].value;
+								copyString(r2[m].initialGene, currentChain[n].initialGene);
+								copyString(r2[m].finalGene, currentChain[n].finalGene);
+								r2[m].value = currentChain[n].value;
 								n++;
 								m++;
 							} else {
-								copyString(chains2[y][m].initialGene, currentChain[n].initialGene);
-								copyString(chains2[y][m].finalGene, currentChain[n].finalGene);
-								chains2[y][m].value = currentChain[n].value;
+								copyString(r2[m].initialGene, currentChain[n].initialGene);
+								copyString(r2[m].finalGene, currentChain[n].finalGene);
+								r2[m].value = currentChain[n].value;
 								n++;
 								m++;
 							}
 						}else {
 							if(m == posInitialGene - 1){
-								copyString(chains2[y][m].initialGene, currentChain[n].initialGene);
-								copyString(chains2[y][m].finalGene, currentRelation.finalGene);
-								chains2[y][m].value = currentChain[n].value - currentRelation.value;
+								copyString(r2[m].initialGene, currentChain[n].initialGene);
+								copyString(r2[m].finalGene, currentRelation.finalGene);
+								r2[m].value = currentChain[n].value - currentRelation.value;
 								m++;
 							} else if(m == posInitialGene){
-								copyString(chains2[y][m].initialGene, currentRelation.finalGene);
-								copyString(chains2[y][m].finalGene, currentChain[n].finalGene);
-								chains2[y][m].value = currentRelation.value;
+								copyString(r2[m].initialGene, currentRelation.finalGene);
+								copyString(r2[m].finalGene, currentChain[n].finalGene);
+								r2[m].value = currentRelation.value;
+								if(currentRelation.value > 0.5) { r[m].value += 0.5; }
 								n++;
 								m++;
 							} else {
-								copyString(chains2[y][m].initialGene, currentChain[n].initialGene);
-								copyString(chains2[y][m].finalGene, currentChain[n].finalGene);
-								chains2[y][m].value = currentChain[n].value;
+								copyString(r2[m].initialGene, currentChain[n].initialGene);
+								copyString(r2[m].finalGene, currentChain[n].finalGene);
+								r2[m].value = currentChain[n].value;
 								n++;
 								m++;
 							}
 						}
 					}
-					//printf("\nChain a %i: \n", z); printChain(chains[z], relationsInChain[z]); printf("\n");
+					printf("\nChain %i: \n", newArray2); printChain(r2, newSize); printf("\n");
 
 					for (int h = 0; h < newSize; h++) {
-						copyString(chains[newArray][h].initialGene, chains1[y][h].initialGene);
-						copyString(chains[newArray][h].finalGene, chains1[y][h].finalGene);
-						double tempValue = chains1[y][h].value;
+						copyString(chains[newArray][h].initialGene, r[h].initialGene);
+						copyString(chains[newArray][h].finalGene, r[h].finalGene);
+						double tempValue = r[h].value;
 						chains[newArray][h].value = tempValue;
 
-						copyString(chains[newArray2][h].initialGene, chains2[y][h].initialGene);
-						copyString(chains[newArray2][h].finalGene, chains2[y][h].finalGene);
-						double tempValue2 = chains2[y][h].value;
+						copyString(chains[newArray2][h].initialGene, r2[h].initialGene);
+						copyString(chains[newArray2][h].finalGene, r2[h].finalGene);
+						double tempValue2 = r2[h].value;
 						chains[newArray2][h].value = tempValue2;
 					}
 
@@ -364,11 +393,12 @@ int * findChains(relation *relations, int relationsAmount, int maxChains){
 					activeChains[newArray2] = 1;
 					chainsToAdd += 2;
 					y++;
-
+					joinedToChain = true;
 				} else if(posInitialGene != -1 && posFinalGene != -1 && posInitialGene != posFinalGene){
 					//Genes separated in chain, chain is not valid
 					printf("\n\nCHAIN BECOMES INNACTIVE\n");
 					activeChains[j] = 0;
+					joinedToChain = true;
 				}
 
 			} else {//Else ignore
@@ -376,22 +406,20 @@ int * findChains(relation *relations, int relationsAmount, int maxChains){
 				printf("\n\nCHAIN IS INNACTIVE\n");
 			}
 		}
-		/*
-			if (joinedToChain == false) {//Chain is completely independent of others, MAY BE TAKEN OUTSIDE OF INITIAL FOR
-				//printf("\n\nNOT JOINED\n");
-				copyString(chains[chainsUsed][0].initialGene, currentRelation.initialGene);
-				copyString(chains[chainsUsed][0].finalGene, currentRelation.finalGene);
-				chains[chainsUsed][0].value = currentRelation.value;
+		if (joinedToChain == false) {//Chain is completely independent of others, MAY BE TAKEN OUTSIDE OF INITIAL FOR
+			printf("\n\nNOT JOINED\n");
+			copyString(chains[chainsUsed][0].initialGene, currentRelation.initialGene);
+			copyString(chains[chainsUsed][0].finalGene, currentRelation.finalGene);
+			chains[chainsUsed][0].value = currentRelation.value;
 
-				copyString(chains[chainsUsed][1].initialGene, currentRelation.finalGene);
-				copyString(chains[chainsUsed][1].finalGene, "**");
-				chains[chainsUsed][1].value = 0;
+			copyString(chains[chainsUsed][1].initialGene, currentRelation.finalGene);
+			copyString(chains[chainsUsed][1].finalGene, "");
+			chains[chainsUsed][1].value = 0;
 
-				relationsInChain[chainsUsed] = 2;
-				activeChains[chainsUsed] = 1;
-				chainsToAdd = 1;
-			}
-		*/
+			relationsInChain[chainsUsed] = 2;
+			activeChains[chainsUsed] = 1;
+			chainsToAdd = 1;
+		}
 		chainsUsed += chainsToAdd;
 		printf("\nCURRENT CHAINS: %i\n", chainsUsed);
 		for(int t = 0; t < chainsUsed; t++){
@@ -403,25 +431,25 @@ int * findChains(relation *relations, int relationsAmount, int maxChains){
 		printf("END HERE\n");
 	}
 	relationsInChain[0] = chainsUsed;
-	return relationsInChain;
+	//return relationsInChain;
 }
 
-void createCromosmomeMaps(){
-	relation r1 = {"A", "B", 0.24};
-    relation r2 = {"A", "F", 0.16};
-    relation r3 = {"A", "C", 0.08};
-    relation r4 = {"F", "B", 0.08};
+void createCromosmomeMaps(relation *relations, int size){
+	//relation r1 = {"A", "B", 0.24};
+    //relation r2 = {"C", "D", 0.16};
+    //relation r3 = {"B", "C", 0.08};
+    //relation r4 = {"F", "B", 0.08};
 
-	relation relations[] = {r2,r1,r3,r4};
+	//relation relations[] = {r2,r1,r3};
 
-    printChain(relations, 4);
+    printChain(relations, size);
     
     printf("SORT\n");
     
-    qsort(relations, 4, sizeof(relation), compareRelations);    
-    printChain(relations, 4);
+    qsort(relations, size, sizeof(relation), compareRelations);    
+    printChain(relations, size);
 
-	int *relationsInChain = findChains(relations, 4, 100);
+	findChains(relations, size);
 	//int chainsUsed = relationsInChain[0];
 	//printf("RESULT------------------------------------------------------\n");
 	//for(int i = 0; i < chainsUsed; i++){

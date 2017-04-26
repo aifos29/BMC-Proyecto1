@@ -22,24 +22,12 @@ FILE      *file_tableData;
 GtkWidget *darea;
 
 int totalGen;
-bool debug = true;
+bool debug = false;
 bool error = false;
 int sizeArray;
 int main() {
   if(debug){
-    double test[3] = {2, 4, 5};
-    //Test quicksort inverted
-    for(int i = 0; i < 3; i++){
-      printf("%lf ", test[i]);
-    }
-    printf("\n");
-    sort(0, val);
-    for(int i = 0; i < 3; i++){
-      printf("%lf ", test[i]);
-    }
-    printf("\n");
-
-    createCromosmomeMaps();
+    //createCromosmomeMaps();
   }
 
     GtkBuilder      *builder;
@@ -90,37 +78,37 @@ int main() {
 
 
 
-static void do_drawing(cairo_t *, GtkWidget *,relation data[4],int total_size);
+static void do_drawing(cairo_t *, GtkWidget *);
 
-static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
-    relation data[4],int total_size)
+static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr)
 {
-  do_drawing(cr, widget,data,total_size);
+  do_drawing(cr, widget);
 
   return FALSE;
 }
 
-static void do_drawing(cairo_t *cr, GtkWidget *widget, relation data[4],int total_size)
+static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
 
-  GtkWidget *darea;
-
-  int y_size = 500;
+    int y_size = 500;
   int x_size = 0;
   int final_size = 0;
   int y = 60;
-  for (int x =0;x<total_size;x++){
+  printf("Chains To Print: %i\n", chainsUsed);
+  for (int x = 0; x < chainsUsed; x++){
     int initial = 0;
     int final = 15;
 
-    for (int i = 0;i<4;i++){
-       int porcentaje = final + data[i].value * 100;
+    printf("Relations In Chain: %i\n", relationsInChain[x]);
+    for (int i = 0; i < relationsInChain[x]; i++){
+      printf("Current relation: %i\n", i);
+       int porcentaje = final + chains[x][i].value * 100;
 
-       if (data[i].value > 1){
+       if (chains[x][i].value > 1){
          //Para la distancia
          initial = initial + 20;
          //Refedine el valor para segir el mismo proceso
-         data[i].value = 1-data[i].value;
+         chains[x][i].value = 1-chains[x][i].value;
        }
        //Dibuja el gen inicial
        cairo_move_to (cr, initial,y);
@@ -131,7 +119,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget, relation data[4],int tota
        cairo_stroke (cr);
        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
        cairo_move_to(cr, initial +2, y);
-       cairo_show_text(cr,data[i].initialGene);
+       cairo_show_text(cr,chains[x][i].initialGene);
        //Dibuja la probabilidad que hay entre cada uno
        cairo_move_to (cr,final,y);
        cairo_line_to(cr,porcentaje,y);
@@ -141,14 +129,15 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget, relation data[4],int tota
        cairo_stroke (cr);
        //Escribe en la imagen el texto que corresponde.
        char charray[5];
-       if (data[i].value != 0){
-       sprintf(charray, "%1.2f", data[i].value);
+       if (chains[x][i].value != 0){
+       sprintf(charray, "%1.2f", chains[x][i].value);
        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
        cairo_move_to(cr,final + 10 ,y-20);
        cairo_show_text(cr, charray);
        initial = porcentaje;
        final = porcentaje + 15;
     }
+    printf("END FOR\n");
 
     }
     if (final > final_size){
@@ -157,13 +146,12 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget, relation data[4],int tota
     y= y + 60;
     x_size = 0;
   }
-
-  gtk_widget_set_size_request( darea,final_size, 40*total_size);
+  gtk_widget_set_size_request( darea,final_size, 10000);
 
 
 }
 
-void_openDrawing(relation data[4]){
+void openDrawing(){
   GtkWidget *window;
   GtkWidget *grid;
   GtkWidget *swindow;
@@ -187,7 +175,7 @@ void_openDrawing(relation data[4]){
   gtk_container_add (GTK_CONTAINER(window),swindow);
 
   g_signal_connect(G_OBJECT(darea), "draw",
-      G_CALLBACK(on_draw_event), data);
+      G_CALLBACK(on_draw_event), NULL);
   g_signal_connect(G_OBJECT(window), "destroy",
       G_CALLBACK(gtk_main_quit), NULL);
 
@@ -350,6 +338,41 @@ void on_btn_getFile_clicked() {
 
 }
 
+void createArray(relation information[sizeArray]){
+  int position = 0;
+  for (int i=1;i<totalGen+1;i++){
+    for (int j=1;j<totalGen+1;j++)
+      if (i<j){
+        relation add;
+        /*Falta agregar el nombre
+        strcpy(add.initialGene,gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
+        strcpy(add.finalGene,gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
+        */
+        if (strcmp(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])),"-")!=0){
+            double x = strtod(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])), NULL);
+            printf("%f\n",x);
+            if (x>0 && x<1){
+              copyString2(add.initialGene, gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
+              copyString2(add.finalGene, gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
+              add.value = x;
+            }
+            else{
+              error = true;
+              break;
+            }
+        }
+        else{
+          add.value = -1;
+        }
+        copyString(information[position].initialGene, add.initialGene);
+        copyString(information[position].finalGene, add.finalGene);
+        information[position].value = add.value;
+        position ++;
+
+      }
+  }
+}
+
 void createFile(char *fileName) {
 /*Declaración de Array*/
   sizeArray = (totalGen * totalGen-1)/2;
@@ -372,46 +395,15 @@ void createFile(char *fileName) {
   }
   fclose(file_tableData);
 
+  createCromosmomeMaps(information, sizeArray);
+  printf("\n\nRESULT\nChains Used: %i\n", chainsUsed);
+  openDrawing();
   /*->>>Llamar a función pasando como parametro el array*/
 }
   else{
 
     printf("Datos ingresados no válidos\n");
     error = false;
-  }
-}
-void createArray(relation information[sizeArray]){
-  int position = 0;
-  for (int i=1;i<totalGen+1;i++){
-    for (int j=1;j<totalGen+1;j++)
-      if (i<j){
-        relation add;
-        /*Falta agregar el nombre
-        strcpy(add.initialGene,gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
-        strcpy(add.finalGene,gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
-        */
-        if (strcmp(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])),"-")!=0){
-            double x = strtod(gtk_entry_get_text(GTK_ENTRY(tableData[i][j])), NULL);
-            printf("%f\n",x);
-            if (x>0 && x<1){
-              copyString(add.initialGene, gtk_entry_get_text(GTK_ENTRY(tableData[i][0])));
-              copyString(add.finalGene, gtk_entry_get_text(GTK_ENTRY(tableData[0][j])));
-          		add.value = x;
-          	}
-            else{
-              error = true;
-              break;
-            }
-        }
-        else{
-          add.value = -1;
-        }
-        copyString(information[position].initialGene, add.initialGene);
-        copyString(information[position].finalGene, add.finalGene);
-        information[position].value = add.value;
-        position ++;
-
-      }
   }
 }
 
