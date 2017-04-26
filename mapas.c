@@ -18,6 +18,9 @@ GtkWidget ***tableData;
 GtkWidget *g_tableData;
 GtkWidget *g_scrolledwindow_initialTableData;
 FILE      *file_tableData;
+
+GtkWidget *darea;
+
 int totalGen;
 bool debug = true;
 bool error = false;
@@ -35,7 +38,7 @@ int main() {
       printf("%lf ", test[i]);
     }
     printf("\n");
-    
+
     createCromosmomeMaps();
   }
 
@@ -82,6 +85,118 @@ int main() {
 
  	  gtk_widget_show(dialog);
     return 0;
+
+}
+
+
+
+static void do_drawing(cairo_t *, GtkWidget *,relation data[4],int total_size);
+
+static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
+    relation data[4],int total_size)
+{
+  do_drawing(cr, widget,data,total_size);
+
+  return FALSE;
+}
+
+static void do_drawing(cairo_t *cr, GtkWidget *widget, relation data[4],int total_size)
+{
+
+  GtkWidget *darea;
+
+  int y_size = 500;
+  int x_size = 0;
+  int final_size = 0;
+  int y = 60;
+  for (int x =0;x<total_size;x++){
+    int initial = 0;
+    int final = 15;
+
+    for (int i = 0;i<4;i++){
+       int porcentaje = final + data[i].value * 100;
+
+       if (data[i].value > 1){
+         //Para la distancia
+         initial = initial + 20;
+         //Refedine el valor para segir el mismo proceso
+         data[i].value = 1-data[i].value;
+       }
+       //Dibuja el gen inicial
+       cairo_move_to (cr, initial,y);
+       cairo_line_to (cr, final, y);
+       cairo_set_source_rgb (cr, 0.2, 0.2, 6);
+       cairo_set_line_width (cr, 40.0);
+       cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
+       cairo_stroke (cr);
+       cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+       cairo_move_to(cr, initial +2, y);
+       cairo_show_text(cr,data[i].initialGene);
+       //Dibuja la probabilidad que hay entre cada uno
+       cairo_move_to (cr,final,y);
+       cairo_line_to(cr,porcentaje,y);
+       cairo_set_source_rgb (cr, 0.5, 0.5, 1);
+       cairo_set_line_width (cr, 40.0);
+       cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
+       cairo_stroke (cr);
+       //Escribe en la imagen el texto que corresponde.
+       char charray[5];
+       if (data[i].value != 0){
+       sprintf(charray, "%1.2f", data[i].value);
+       cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+       cairo_move_to(cr,final + 10 ,y-20);
+       cairo_show_text(cr, charray);
+       initial = porcentaje;
+       final = porcentaje + 15;
+    }
+
+    }
+    if (final > final_size){
+      final_size = final;
+    }
+    y= y + 60;
+    x_size = 0;
+  }
+
+  gtk_widget_set_size_request( darea,final_size, 40*total_size);
+
+
+}
+
+void_openDrawing(relation data[4]){
+  GtkWidget *window;
+  GtkWidget *grid;
+  GtkWidget *swindow;
+
+  GtkWidget *viewport;
+
+
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  grid = gtk_grid_new();
+  swindow = gtk_scrolled_window_new (NULL,NULL);
+  viewport = gtk_viewport_new (NULL,NULL);
+  darea = gtk_drawing_area_new();
+
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+
+  gtk_widget_set_hexpand(GTK_WIDGET(swindow), TRUE);
+  gtk_widget_set_vexpand(GTK_WIDGET(swindow), TRUE);
+  gtk_container_add (GTK_CONTAINER(viewport), darea);
+  gtk_container_add (GTK_CONTAINER(swindow), viewport);
+  //gtk_grid_attach (GTK_GRID(grid), swindow, 0, 1, 1, 2);
+  gtk_container_add (GTK_CONTAINER(window),swindow);
+
+  g_signal_connect(G_OBJECT(darea), "draw",
+      G_CALLBACK(on_draw_event), data);
+  g_signal_connect(G_OBJECT(window), "destroy",
+      G_CALLBACK(gtk_main_quit), NULL);
+
+  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+  gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
+  gtk_window_set_title(GTK_WINDOW(window), "Fill & stroke");
+
+
+  gtk_widget_show_all(window);
 
 }
 
@@ -260,6 +375,7 @@ void createFile(char *fileName) {
   /*->>>Llamar a función pasando como parametro el array*/
 }
   else{
+
     printf("Datos ingresados no válidos\n");
     error = false;
   }
