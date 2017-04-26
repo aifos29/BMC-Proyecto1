@@ -15,6 +15,8 @@ GtkWidget *g_entry_fileName;
 GtkWidget *dialog;
 GtkWidget *dialog2;
 
+GtkWidget *zoom;
+
 GtkWidget *windowTableData;
 GtkWidget ***tableData;
 GtkWidget *g_tableData;
@@ -23,10 +25,21 @@ FILE      *file_tableData;
 
 GtkWidget *darea;
 
+int openZoom = 0;
 int totalGen;
 bool debug = false;
 bool error = false;
 int sizeArray;
+
+
+int scala = 4;
+
+GtkWidget *window;
+GtkWidget *grid;
+GtkWidget *swindow;
+
+GtkWidget *viewport;
+
 int main() {
   if(debug){
     //createCromosmomeMaps();
@@ -65,6 +78,7 @@ int main() {
 
     dialog2 = GTK_WIDGET(gtk_builder_get_object(builder,"errorMessage2"));
 
+    zoom = GTK_WIDGET(gtk_builder_get_object(builder,"zoom"));
 
     GtkFileFilter *filter = gtk_file_filter_new ();
     gtk_file_filter_add_pattern (filter, "*.cvs");
@@ -101,12 +115,12 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
   printf("Chains To Print: %i\n", chainsUsed);
   for (int x = 0; x < chainsUsed; x++){
     int initial = 0;
-    int final = 15;
+    int final = scala*5;
 
     printf("Relations In Chain: %i\n", relationsInChain[x]);
     for (int i = 0; i < relationsInChain[x]; i++){
       printf("Current relation: %i\n", i);
-       int porcentaje = final + chains[x][i].value * 100;
+       int porcentaje = final + chains[x][i].value * (100*scala);
 
        if (chains[x][i].value > 1){
          //Para la distancia
@@ -118,17 +132,18 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
        cairo_move_to (cr, initial,y);
        cairo_line_to (cr, final, y);
        cairo_set_source_rgb (cr, 0.2, 0.2, 6);
-       cairo_set_line_width (cr, 40.0);
+       cairo_set_line_width (cr, 10*scala);
        cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
        cairo_stroke (cr);
        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-       cairo_move_to(cr, initial +2, y);
+       cairo_move_to(cr, initial + 5, y);
        cairo_show_text(cr,chains[x][i].initialGene);
+       cairo_set_font_size(cr,scala*2);
        //Dibuja la probabilidad que hay entre cada uno
        cairo_move_to (cr,final,y);
        cairo_line_to(cr,porcentaje,y);
        cairo_set_source_rgb (cr, 0.5, 0.5, 1);
-       cairo_set_line_width (cr, 40.0);
+       cairo_set_line_width (cr, 10*scala);
        cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
        cairo_stroke (cr);
        //Escribe en la imagen el texto que corresponde.
@@ -136,10 +151,11 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
        if (chains[x][i].value != 0){
        sprintf(charray, "%1.2f", chains[x][i].value);
        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-       cairo_move_to(cr,final + 10 ,y-20);
+       cairo_move_to(cr,final,y);
        cairo_show_text(cr, charray);
+       cairo_set_font_size(cr,scala*2);
        initial = porcentaje;
-       final = porcentaje + 15;
+       final = porcentaje + (scala*5);
     }
     printf("END FOR\n");
 
@@ -147,20 +163,20 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
     if (final > final_size){
       final_size = final;
     }
-    y= y + 60;
-    x_size = 0;
+    y= y + (10*scala)+10;
   }
-  gtk_widget_set_size_request( darea,final_size, 10000);
+  gtk_widget_set_size_request( darea,final_size, chainsUsed*y);
 
+if (!openZoom){
+  openZoom = 1;
+  gtk_widget_show(zoom);
+}
 
 }
 
-void openDrawing(){
-  GtkWidget *window;
-  GtkWidget *grid;
-  GtkWidget *swindow;
 
-  GtkWidget *viewport;
+
+void openDrawing(){
 
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -185,10 +201,26 @@ void openDrawing(){
 
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
-  gtk_window_set_title(GTK_WINDOW(window), "Fill & stroke");
+  gtk_window_set_title(GTK_WINDOW(window), "Mapas Cromosomicos");
 
 
   gtk_widget_show_all(window);
+
+}
+
+void less(){
+  if (scala>0){
+  gtk_widget_hide(window);
+  scala = scala -1;
+  openDrawing();
+}
+}
+
+void more(){
+  gtk_widget_hide(window);
+
+  scala = scala+1;
+  openDrawing();
 
 }
 
