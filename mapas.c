@@ -13,6 +13,8 @@ GtkWidget *g_filechooser_btn;
 GtkWidget *g_entry_totalGen;
 GtkWidget *g_entry_fileName;
 GtkWidget *dialog;
+GtkWidget *dialog2;
+
 GtkWidget *windowTableData;
 GtkWidget ***tableData;
 GtkWidget *g_tableData;
@@ -60,6 +62,8 @@ int main() {
     g_entry_fileName = GTK_WIDGET(gtk_builder_get_object(builder, "entry_fileName"));
 
     dialog = GTK_WIDGET(gtk_builder_get_object(builder,"errorMessage"));
+
+    dialog2 = GTK_WIDGET(gtk_builder_get_object(builder,"errorMessage2"));
 
 
     GtkFileFilter *filter = gtk_file_filter_new ();
@@ -206,6 +210,10 @@ void destroy_dialog(){
 	gtk_widget_hide(dialog);
 }
 
+void destroy_dialog2(){
+	gtk_widget_hide(dialog2);
+}
+
 void on_btn_manualEntry_clicked() {
   gtk_widget_hide(g_frame_fileEntry);
   gtk_widget_show(g_frame_manualEntry);
@@ -214,6 +222,14 @@ void on_btn_manualEntry_clicked() {
 void on_btn_fileEntry_clicked() {
   gtk_widget_hide(g_frame_manualEntry);
   gtk_widget_show(g_frame_fileEntry);
+}
+
+void changeRow(GtkWidget * widget, int x){
+  gtk_entry_set_text (GTK_ENTRY(tableData[0][x]),gtk_entry_get_text(GTK_ENTRY(tableData[x][0])));
+}
+
+void changeColumn(GtkWidget * widget, int x){
+  gtk_entry_set_text (GTK_ENTRY(tableData[x][0]),gtk_entry_get_text(GTK_ENTRY(tableData[0][x])));
 }
 
 void createTableData(){
@@ -239,11 +255,15 @@ void createTableData(){
       	char name[10];
       	sprintf(name, "GEN%d", row);
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),name);
+         g_signal_connect(G_OBJECT(GTK_ENTRY(tableData[row][column])), "changed", G_CALLBACK(changeRow), row);
+
       }
         if (column != 0 && row==0){
       	char name[10];
       	sprintf(name, "GEN%d", column);
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),name);
+         g_signal_connect(G_OBJECT(GTK_ENTRY(tableData[row][column])), "changed", G_CALLBACK(changeColumn),column);
+
       }
         if (row>column && column != 0){
              gtk_widget_set_sensitive(tableData[row][column],FALSE);
@@ -252,9 +272,9 @@ void createTableData(){
             gtk_widget_set_sensitive(tableData[0][0],FALSE);
             gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),"0.0");
         }
-        if (row<column){
+        if (row<column && row!=0 && column !=0){
           gtk_entry_set_max_length (GTK_ENTRY(tableData[row][column]),4);
-        }
+         }
   }
 }
   gtk_widget_set_sensitive(tableData[0][0],FALSE);
@@ -300,9 +320,13 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
 
       if (column == 0 && row!=0){
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),header[row-1]);
+         g_signal_connect(G_OBJECT(GTK_ENTRY(tableData[row][column])), "changed", G_CALLBACK(changeRow), row);
+
       }
         if (column != 0 && row==0){
       	 gtk_entry_set_text (GTK_ENTRY(tableData[row][column]),header[column-1]);
+         g_signal_connect(G_OBJECT(GTK_ENTRY(tableData[row][column])), "changed", G_CALLBACK(changeColumn), column);
+
       }
 
       if (row != 0 && column != 0){
@@ -311,6 +335,9 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
       if (row>column){
              gtk_widget_set_sensitive(tableData[row][column],FALSE);
        }
+       if (row<column && row!=0 && column !=0){
+          gtk_entry_set_max_length (GTK_ENTRY(tableData[row][column]),4);
+        }
 
 
     }
@@ -319,9 +346,6 @@ void createTableDataFile(char Data[totalGen][totalGen][5],char header[totalGen][
   gtk_widget_set_name(tableData[0][0],"rowHeader");
   gtk_widget_show_all(windowTableData);
 }
-
-
-
 
 
 void on_btn_getFile_clicked() {
@@ -334,8 +358,6 @@ void on_btn_getFile_clicked() {
   printf("Entrada Archivo\n");
   createTableDataFile(Data,header);
   gtk_widget_hide(windowInitial);
-
-
 }
 
 void createArray(relation information[sizeArray]){
@@ -404,6 +426,8 @@ void createFile(char *fileName) {
 
     printf("Datos ingresados no válidos\n");
     error = false;
+    gtk_widget_show(dialog2);
+
   }
 }
 
