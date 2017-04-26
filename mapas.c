@@ -112,21 +112,24 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
   int x_size = 0;
   int final_size = 0;
   int y = 60;
-  printf("Chains To Print: %i\n", chainsUsed);
+  //printf("Chains To Print: %i\n", chainsUsed);
   for (int x = 0; x < chainsUsed; x++){
+    if(activeChains[x] == 0){
+      continue;
+    }
     int initial = 0;
     int final = scala*5;
 
-    printf("Relations In Chain: %i\n", relationsInChain[x]);
+    //printf("Relations In Chain: %i\n", relationsInChain[x]);
     for (int i = 0; i < relationsInChain[x]; i++){
-      printf("Current relation: %i\n", i);
+      //printf("Current relation: %i\n", i);
        int porcentaje = final + chains[x][i].value * (100*scala);
 
-       if (chains[x][i].value > 1){
+       if (chains[x][i].value >= 1){
          //Para la distancia
-         initial = initial + 20;
+         initial = initial + 400;
          //Refedine el valor para segir el mismo proceso
-         chains[x][i].value = 1-chains[x][i].value;
+         chains[x][i].value = chains[x][i].value - 1;
        }
        //Dibuja el gen inicial
        cairo_move_to (cr, initial,y);
@@ -157,7 +160,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
        initial = porcentaje;
        final = porcentaje + (scala*5);
     }
-    printf("END FOR\n");
+    //printf("END FOR\n");
 
     }
     if (final > final_size){
@@ -451,8 +454,17 @@ void createFile(char *fileName) {
 
   createCromosmomeMaps(information, sizeArray);
   printf("\n\nRESULT\nChains Used: %i\n", chainsUsed);
-  openDrawing();
-  /*->>>Llamar a función pasando como parametro el array*/
+  bool valid = false;
+  for(int i = 0; i < chainsUsed; i++){
+    if(activeChains[i] == 1){
+      valid = true;
+    }
+  }
+  if(!valid){
+    gtk_widget_show(dialog2);
+  } else {
+    openDrawing(); 
+  }
 }
   else{
 
